@@ -1,9 +1,9 @@
-import { Buffer } from 'node:buffer';
 import { brotliDecompressSync } from 'node:zlib';
 import { Tiktoken } from 'js-tiktoken/lite';
 import { estimateTokenCount } from 'tokenx';
 import {
 	getTokenizer,
+	type NormalizedTokenizerAsset,
 	registerTokenizerFamily,
 	unpackPackedAsset,
 } from '@cyberlangke/tokkit-core';
@@ -37,6 +37,11 @@ export const TOKEN_METHODS: TokenMethod[] = [
 
 const QWEN_FAMILY = 'tokenbar-qwen3.5';
 const DEEPSEEK_FAMILY = 'tokenbar-deepseek-v3.1';
+const BASE64_ALPHABET =
+	'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+const brotliDecompress = brotliDecompressSync as unknown as (
+	input: Uint8Array,
+) => Uint8Array;
 
 let registeredLocalFamilies = false;
 let gptEncoder: Tiktoken | null = null;
@@ -79,16 +84,68 @@ function getGptEncoder(): Tiktoken {
 function getO200kBase(): TiktokenRankData {
 	if (!o200kBase) {
 		const packed = decodeBase85(o200kBasePacked, o200kBasePackedLength);
-		o200kBase = JSON.parse(
-			brotliDecompressSync(packed).toString('utf8'),
-		) as TiktokenRankData;
+		const json = new TextDecoder().decode(brotliDecompress(packed));
+		o200kBase = parseTiktokenRankData(json);
 	}
 
 	return o200kBase;
 }
 
-function unpackBase85PackedAsset(packed: string, byteLength: number) {
-	return unpackPackedAsset(Buffer.from(decodeBase85(packed, byteLength)).toString('base64'));
+function parseTiktokenRankData(json: string): TiktokenRankData {
+	const parsed: unknown = JSON.parse(json);
+	if (!isTiktokenRankData(parsed)) {
+		throw new Error('Invalid GPT tokenizer asset.');
+	}
+
+	return parsed;
+}
+
+function isTiktokenRankData(value: unknown): value is TiktokenRankData {
+	if (!isRecord(value)) {
+		return false;
+	}
+
+	return (
+		typeof value.pat_str === 'string' &&
+		typeof value.bpe_ranks === 'string' &&
+		isNumberRecord(value.special_tokens)
+	);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null;
+}
+
+function isNumberRecord(value: unknown): value is Record<string, number> {
+	return (
+		isRecord(value) &&
+		Object.values(value).every((entry) => typeof entry === 'number')
+	);
+}
+
+function unpackBase85PackedAsset(
+	packed: string,
+	byteLength: number,
+): NormalizedTokenizerAsset {
+	return unpackPackedAsset(bytesToBase64(decodeBase85(packed, byteLength)));
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+	let output = '';
+
+	for (let index = 0; index < bytes.length; index += 3) {
+		const first = bytes[index] ?? 0;
+		const second = bytes[index + 1] ?? 0;
+		const third = bytes[index + 2] ?? 0;
+		const value = (first << 16) | (second << 8) | third;
+
+		output += BASE64_ALPHABET[(value >> 18) & 0x3f];
+		output += BASE64_ALPHABET[(value >> 12) & 0x3f];
+		output += index + 1 < bytes.length ? BASE64_ALPHABET[(value >> 6) & 0x3f] : '=';
+		output += index + 2 < bytes.length ? BASE64_ALPHABET[value & 0x3f] : '=';
+	}
+
+	return output;
 }
 
 export async function countAllTokenMethods(
