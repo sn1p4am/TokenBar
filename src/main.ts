@@ -151,7 +151,7 @@ export default class TokenBarPlugin extends Plugin {
 			}
 
 			if (
-				/(\bwords?\b|\bcharacters?\b|个词|个字符|字数|字符)/i.test(
+				/(\bwords?\b|\bcharacters?\b|\u4e2a\u8bcd|\u4e2a\u5b57\u7b26|\u5b57\u6570|\u5b57\u7b26)/i.test(
 					item.textContent ?? '',
 				)
 			) {

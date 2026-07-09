@@ -18,6 +18,26 @@ TokenBar is an Obsidian desktop plugin that shows the active note's local token 
 
 All counting is local. Claude and Gemini values are estimates and may differ from provider-side token counts.
 
+## Privacy
+
+TokenBar runs fully locally. It does not send note content to remote services, does not include telemetry, and does not require an account or payment.
+
+## Limitations
+
+- Claude and Gemini counts are estimates because their provider-side tokenizers are not bundled.
+- Embedded images and attachments are excluded; TokenBar counts note text only.
+- TokenBar is desktop-only.
+
+## Third-party notices
+
+TokenBar uses these tokenizer libraries and assets:
+
+- `js-tiktoken` (MIT)
+- `tokenx` (MIT)
+- `@cyberlangke/tokkit-core` (MIT)
+- `@cyberlangke/tokkit-deepseek` (MIT)
+- `@cyberlangke/tokkit-qwen` (Apache-2.0)
+
 ## Development
 
 ```bash
