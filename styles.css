@@ -1,0 +1,7 @@
+.tokenbar-status {
+	cursor: default;
+}
+
+.tokenbar-status.is-hidden {
+	display: none;
+}

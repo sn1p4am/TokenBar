@@ -1,0 +1,33 @@
+{
+	"name": "tokenbar",
+	"version": "0.1.0",
+	"description": "Obsidian plugin that shows local token counts for the active note.",
+	"main": "main.js",
+	"type": "module",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
+	},
+	"keywords": [
+		"obsidian",
+		"tokens",
+		"tokenizer",
+		"gpt",
+		"qwen",
+		"deepseek"
+	],
+	"license": "MIT",
+	"dependencies": {
+		"@cyberlangke/tokkit-core": "1.11.0",
+		"@cyberlangke/tokkit-deepseek": "1.11.0",
+		"@cyberlangke/tokkit-qwen": "1.11.0",
+		"js-tiktoken": "1.0.21",
+		"tokenx": "1.3.0"
+	},
+	"devDependencies": {
+		"@types/node": "^22.15.17",
+		"esbuild": "0.25.5",
+		"obsidian": "latest",
+		"typescript": "^5.8.3"
+	}
+}
