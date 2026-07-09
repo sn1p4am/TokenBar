@@ -35,7 +35,6 @@ TokenBar runs fully locally. It does not send note content to remote services, d
 - Claude and Gemini counts are estimates because their provider-side tokenizers are not bundled.
 - Embedded images and attachments are excluded; TokenBar counts note text only.
 - TokenBar is desktop-only.
-- The bundled `main.js` is larger than 5 MB because TokenBar includes local tokenizer assets. Users on the Obsidian Sync Standard plan may need to install TokenBar separately in each synced vault.
 
 ## Third-party notices
 

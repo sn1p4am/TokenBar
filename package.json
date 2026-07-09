@@ -1,11 +1,12 @@
 {
 	"name": "tokenbar",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Obsidian plugin that shows local token counts for the active note.",
 	"main": "main.js",
 	"type": "module",
 	"author": "sn1p4am",
 	"scripts": {
+		"pack-assets": "node scripts/pack-tokenizer-assets.mjs",
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
 	},

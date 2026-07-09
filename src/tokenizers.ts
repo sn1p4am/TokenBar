@@ -1,21 +1,19 @@
+import { Buffer } from 'node:buffer';
+import { brotliDecompressSync } from 'node:zlib';
 import { Tiktoken } from 'js-tiktoken/lite';
-import o200kBase from 'js-tiktoken/ranks/o200k_base';
 import { estimateTokenCount } from 'tokenx';
 import {
 	getTokenizer,
 	registerTokenizerFamily,
 	unpackPackedAsset,
 } from '@cyberlangke/tokkit-core';
-
-// These provider packages do not publish public subpath exports for the generated
-// assets, so TokenBar imports the packaged assets directly and bundles them.
-// @ts-expect-error Generated tokenizer asset has no TypeScript declaration.
-import qwen35Asset from '../node_modules/@cyberlangke/tokkit-qwen/dist/generated/qwen3_5.js';
-// @ts-expect-error Generated tokenizer asset has no TypeScript declaration.
-import deepseek31Asset from '../node_modules/@cyberlangke/tokkit-deepseek/dist/generated/deepseek_v3_1.js';
-
-const qwen35PackedAsset = qwen35Asset as unknown as string;
-const deepseek31PackedAsset = deepseek31Asset as unknown as string;
+import { decodeBase85 } from './base85';
+import {
+	deepseek31Packed,
+	deepseek31PackedLength,
+} from './generated/deepseek31-packed';
+import { o200kBasePacked, o200kBasePackedLength } from './generated/o200k-base-packed';
+import { qwen35Packed, qwen35PackedLength } from './generated/qwen35-packed';
 
 export type TokenMethodId = 'gpt' | 'qwen' | 'deepseek' | 'claude' | 'gemini';
 
@@ -42,6 +40,13 @@ const DEEPSEEK_FAMILY = 'tokenbar-deepseek-v3.1';
 
 let registeredLocalFamilies = false;
 let gptEncoder: Tiktoken | null = null;
+let o200kBase: TiktokenRankData | null = null;
+
+interface TiktokenRankData {
+	pat_str: string;
+	special_tokens: Record<string, number>;
+	bpe_ranks: string;
+}
 
 function registerLocalFamilies() {
 	if (registeredLocalFamilies) {
@@ -51,13 +56,13 @@ function registerLocalFamilies() {
 	registerTokenizerFamily({
 		family: QWEN_FAMILY,
 		aliases: ['qwen', 'qwen3.5'],
-		load: () => unpackPackedAsset(qwen35PackedAsset),
+		load: () => unpackBase85PackedAsset(qwen35Packed, qwen35PackedLength),
 	});
 
 	registerTokenizerFamily({
 		family: DEEPSEEK_FAMILY,
 		aliases: ['deepseek', 'deepseek-v3.1'],
-		load: () => unpackPackedAsset(deepseek31PackedAsset),
+		load: () => unpackBase85PackedAsset(deepseek31Packed, deepseek31PackedLength),
 	});
 
 	registeredLocalFamilies = true;
@@ -65,10 +70,25 @@ function registerLocalFamilies() {
 
 function getGptEncoder(): Tiktoken {
 	if (!gptEncoder) {
-		gptEncoder = new Tiktoken(o200kBase);
+		gptEncoder = new Tiktoken(getO200kBase());
 	}
 
 	return gptEncoder;
+}
+
+function getO200kBase(): TiktokenRankData {
+	if (!o200kBase) {
+		const packed = decodeBase85(o200kBasePacked, o200kBasePackedLength);
+		o200kBase = JSON.parse(
+			brotliDecompressSync(packed).toString('utf8'),
+		) as TiktokenRankData;
+	}
+
+	return o200kBase;
+}
+
+function unpackBase85PackedAsset(packed: string, byteLength: number) {
+	return unpackPackedAsset(Buffer.from(decodeBase85(packed, byteLength)).toString('base64'));
 }
 
 export async function countAllTokenMethods(
