@@ -141,7 +141,7 @@ export default class TokenBarPlugin extends Plugin {
 		}
 
 		const items = Array.from(parentEl.children).filter(
-			(child): child is HTMLElement => child instanceof HTMLElement,
+			(child): child is HTMLElement => child.instanceOf(HTMLElement),
 		);
 		let wordCountItem: HTMLElement | null = null;
 		for (let index = items.length - 1; index >= 0; index -= 1) {

@@ -1,6 +1,6 @@
 {
 	"name": "tokenbar",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Obsidian plugin that shows local token counts for the active note.",
 	"main": "main.js",
 	"type": "module",

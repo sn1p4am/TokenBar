@@ -14,6 +14,9 @@ import qwen35Asset from '../node_modules/@cyberlangke/tokkit-qwen/dist/generated
 // @ts-expect-error Generated tokenizer asset has no TypeScript declaration.
 import deepseek31Asset from '../node_modules/@cyberlangke/tokkit-deepseek/dist/generated/deepseek_v3_1.js';
 
+const qwen35PackedAsset = qwen35Asset as unknown as string;
+const deepseek31PackedAsset = deepseek31Asset as unknown as string;
+
 export type TokenMethodId = 'gpt' | 'qwen' | 'deepseek' | 'claude' | 'gemini';
 
 export interface TokenMethod {
@@ -48,13 +51,13 @@ function registerLocalFamilies() {
 	registerTokenizerFamily({
 		family: QWEN_FAMILY,
 		aliases: ['qwen', 'qwen3.5'],
-		load: () => unpackPackedAsset(qwen35Asset),
+		load: () => unpackPackedAsset(qwen35PackedAsset),
 	});
 
 	registerTokenizerFamily({
 		family: DEEPSEEK_FAMILY,
 		aliases: ['deepseek', 'deepseek-v3.1'],
-		load: () => unpackPackedAsset(deepseek31Asset),
+		load: () => unpackPackedAsset(deepseek31PackedAsset),
 	});
 
 	registeredLocalFamilies = true;
